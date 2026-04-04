@@ -16,7 +16,7 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
 @router.post("/refresh")
 async def get_refresh_token(
         token_data:RefreshTokenRequest,
-        db = db_dep
+        db : db_dep
 ):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -53,7 +53,7 @@ async def get_refresh_token(
 @router.post('/login')
 async def user_login(
         user_credentials: Annotated[OAuth2PasswordRequestForm, Depends()],
-        db= db_dep
+        db: db_dep
 ):
 
     query = select(User).filter(
