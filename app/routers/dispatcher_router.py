@@ -17,8 +17,8 @@ router = APIRouter(prefix="/api/dispatcher", tags=["Dispatcher"])
 @router.post("/orders", response_model=OrderResponse, status_code=status.HTTP_201_CREATED)
 async def create_order(
     data: OrderCreateRequest,
-    user= is_dispatcher,
-    db = db_dep
+    user: is_dispatcher,
+    db : db_dep
 ):
     new_order = Order(
         driver_id=data.driver_id,
@@ -38,8 +38,8 @@ async def create_order(
 async def update_order_manually(
     order_id: int,
     data: OrderManualUpdateRequest,
-    user= is_dispatcher,
-    db = db_dep
+    user:is_dispatcher,
+    db : db_dep
 ):
     update_fields = {}
     if data.new_destination_id is not None:
@@ -65,8 +65,8 @@ async def update_order_manually(
 @router.post("/orders/{order_id}/approve_ai", status_code=status.HTTP_200_OK)
 async def approve_ai_proposal(
     order_id: int,
-    user= is_dispatcher,
-    db= db_dep
+    user:is_dispatcher,
+    db:db_dep
 ):
     res = await db.execute(select(Order).where(Order.id == order_id))
     order = res.scalar_one_or_none()
