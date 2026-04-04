@@ -1,4 +1,4 @@
-from app.backend.db import AsyncSessionLocal
+from .db import AsyncSessionLocal
 from sqlalchemy.ext.asyncio import AsyncSession
 
 async def get_db():
