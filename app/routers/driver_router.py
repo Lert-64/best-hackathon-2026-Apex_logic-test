@@ -9,7 +9,7 @@ router = APIRouter(prefix="/driver", tags=["Driver"])
 
 
 @router.get("/orders/current", response_model=OrderResponse, status_code=status.HTTP_200_OK)
-async def get_current_order(user: is_driver, db: db_dep):
+async def get_current_order(user=  is_driver, db=  db_dep):
     stmt = select(Order).filter(
         Order.driver_id == user.id,
         Order.status == OrderStatusEnum.IN_PROGRESS
@@ -26,7 +26,7 @@ async def get_current_order(user: is_driver, db: db_dep):
 
 
 @router.post("/orders/{order_id}/accept", status_code=status.HTTP_200_OK)
-async def accept_order(order_id: int, user: is_driver, db: db_dep):
+async def accept_order(order_id: int, user=  is_driver, db =  db_dep):
     await db.execute(
         update(Order)
         .where(Order.id == order_id)
@@ -37,7 +37,7 @@ async def accept_order(order_id: int, user: is_driver, db: db_dep):
 
 
 @router.post("/orders/{order_id}/force_majeure", status_code=status.HTTP_202_ACCEPTED)
-async def report_force_majeure(order_id: int, data: ForceMajeureRequest, user: is_driver, db: db_dep):
+async def report_force_majeure(order_id: int, data: ForceMajeureRequest, user=  is_driver, db =  db_dep):
     await db.execute(
         update(Order)
         .where(Order.id == order_id)
@@ -48,7 +48,7 @@ async def report_force_majeure(order_id: int, data: ForceMajeureRequest, user: i
 
 
 @router.post("/orders/{order_id}/complete", status_code=status.HTTP_200_OK)
-async def complete_order(order_id: int, user: is_driver, db: db_dep):
+async def complete_order(order_id: int, user= is_driver, db= db_dep):
     await db.execute(
         update(Order)
         .where(Order.id == order_id)

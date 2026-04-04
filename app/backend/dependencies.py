@@ -1,3 +1,5 @@
+from sqlalchemy.sql.annotation import Annotated
+
 from backend.db_depends import get_db
 from typing import Annotated
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -61,6 +63,6 @@ class CheckRole:
             )
         return user
 
-is_dispatcher = Annotated[User, Depends(CheckRole([RoleEnum.DISPATCHER]))]
-is_driver = Annotated[User, Depends(CheckRole([RoleEnum.DRIVER]))]
-is_driver_or_dispatcher = Annotated[User, Depends(CheckRole([RoleEnum.DRIVER, RoleEnum.DISPATCHER]))]
+is_dispatcher =  Annotated[User,Depends(CheckRole([RoleEnum.DISPATCHER]))]
+is_driver =  Annotated[User,Depends(CheckRole([RoleEnum.DRIVER]))]
+is_driver_or_dispatcher =  Annotated[User,Depends(CheckRole([RoleEnum.DRIVER, RoleEnum.DISPATCHER]))]
