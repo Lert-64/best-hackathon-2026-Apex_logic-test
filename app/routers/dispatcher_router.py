@@ -3,9 +3,9 @@ from sqlalchemy import select, update
 from typing import Annotated
 
 
-from backend.dependencies import is_dispatcher, db_dep
-from models.order_model import Order
-from schemas.order_schemas import (
+from ..backend.dependencies import is_dispatcher, db_dep
+from ..models.order_model import Order
+from ..schemas.order_schemas import (
     OrderResponse,
     OrderCreateRequest,
     OrderManualUpdateRequest
