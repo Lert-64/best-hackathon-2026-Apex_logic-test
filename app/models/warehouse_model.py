@@ -1,7 +1,7 @@
 from sqlalchemy import Integer, String, Float, ForeignKey, Enum as SQLEnum
 from sqlalchemy.orm import Mapped, mapped_column
 import enum
-from backend.db import Base
+from ..backend.db import Base
 
 class ItemTypeEnum(str, enum.Enum):
     MEDS = "MEDS"

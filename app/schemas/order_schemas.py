@@ -1,14 +1,14 @@
 from pydantic import BaseModel, Field, ConfigDict
 from typing import Optional, List
 
-from models.order_model import (
+from ..models.order_model import (
     ItemTypeEnum,
     PriorityEnum,
     OrderStatusEnum,
     AIActionEnum
 )
 
-from schemas.inventory_schemas import InventoryDeltaItem
+from .inventory_schemas import InventoryDeltaItem
 
 
 class OrderCreateRequest(BaseModel):

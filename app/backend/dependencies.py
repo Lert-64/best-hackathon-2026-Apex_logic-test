@@ -1,13 +1,14 @@
 from sqlalchemy.sql.annotation import Annotated
-
-from backend.db_depends import get_db
+from .db_depends import get_db
 from typing import Annotated
 from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi import Depends,HTTPException,status
-from models.user_model import RoleEnum
-from models.user_model import User
+from fastapi import Depends, HTTPException, status
+
+from   ..models.user_model import RoleEnum
+from   ..models.user_model import User
+
 from fastapi.security import OAuth2PasswordBearer
-from security import verify_token
+from .security import verify_token
 from sqlalchemy import select
 
 db_dep = Annotated[AsyncSession,Depends(get_db)]
