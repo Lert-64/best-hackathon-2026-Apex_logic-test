@@ -4,11 +4,10 @@ from datetime import timedelta,  datetime,timezone
 from passlib.context import CryptContext
 
 
-
 UTC = timezone.utc
 SECRET_KEY = os.getenv("SECRET_KEY", "57da982b76ede4c3ef8caeaa7b5b4431a6f9a200effc80363a4eefd5de8ec5e9")
 ALGORITHM = os.getenv("ALGORITHM", "HS256")
-
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated='auto')
 
@@ -26,7 +25,7 @@ def create_access_token(data: dict, expires_delta: timedelta = None):
     if expires_delta:
         expires = datetime.now(UTC) + expires_delta
     else:
-        expires = datetime.now(UTC) + timedelta(minutes=15)
+        expires = datetime.now(UTC) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
 
     to_encode.update({"exp": expires})
 

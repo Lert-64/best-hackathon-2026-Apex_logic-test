@@ -1,10 +1,10 @@
 #!/bin/sh
 
 echo "Waiting for database..."
+# Використовуємо apex_logic_db замість db
 until pg_isready -h db -p 5432 -U postgres; do
   sleep 1
 done
-
 echo "Database is up!"
 
 mkdir -p /app/app/migrations/versions
