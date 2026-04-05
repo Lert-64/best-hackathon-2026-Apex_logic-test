@@ -14,12 +14,12 @@ router = APIRouter(prefix="/api/driver", tags=["Driver"])
 
 
 
-@router.get("/orders/current", response_model=list[OrderResponse], status_code=status.HTTP_200_OK)
+@router.get("/orders/current", response_model=list[OrderResponse])
 async def get_current_order(user: is_driver, db: db_dep):
-
     stmt = select(Order).filter(
-        Order.driver_id == user.id,
+        Order.driverid == user.id,
         Order.status.in_([
+            OrderStatusEnum.PENDING,
             OrderStatusEnum.IN_PROGRESS,
             OrderStatusEnum.NEEDS_ATTENTION,
             OrderStatusEnum.REROUTED
@@ -27,17 +27,14 @@ async def get_current_order(user: is_driver, db: db_dep):
     ).order_by(Order.id.desc())
 
     result = await db.execute(stmt)
-
-
     orders = result.scalars().all()
 
     if not orders:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Активних рейсів не знайдено"
-        )
+        raise HTTPException(status_code=404, detail="Рейсів не знайдено")
 
     return orders
+
+
 @router.post("/orders/{order_id}/accept", status_code=status.HTTP_200_OK)
 async def accept_order(order_id: int, user: is_driver, db: db_dep):
     result = await db.execute(
