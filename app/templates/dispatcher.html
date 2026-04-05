@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="LogiFlow Dispatcher Dashboard">
+    <meta name="theme-color" content="#1A4B84">
+    <title>Панель Диспетчера | LogiFlow Apex Ultra</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        body {
+            background-color: #F3F4F6;
+            font-family: 'Inter', sans-serif;
+            color: #111827;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        .table-container::-webkit-scrollbar { 
+            width: 8px; 
+            height: 8px; 
+        }
+        .table-container::-webkit-scrollbar-track { 
+            background: #F9FAFB; 
+            border-radius: 4px; 
+        }
+        .table-container::-webkit-scrollbar-thumb { 
+            background: #D1D5DB; 
+            border-radius: 4px; 
+        }
+        .table-container::-webkit-scrollbar-thumb:hover { 
+            background: #9CA3AF; 
+        }
+        .status-badge {
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+        .ST-PENDING { background: #F3F4F6; color: #4B5563; border: 1px solid #E5E7EB; }
+        .ST-IN_PROGRESS { background: #EFF6FF; color: #1D4ED8; border: 1px solid #BFDBFE; }
+        .ST-NEEDS_ATTENTION { background: #FEF2F2; color: #DC2626; border: 1px solid #FECACA; animation: pulse-soft-red 2s infinite; }
+        .ST-REROUTED { background: #FAF5FF; color: #7E22CE; border: 1px solid #E9D5FF; }
+        .ST-COMPLETED { background: #F0FDF4; color: #15803D; border: 1px solid #BBF7D0; }
+        .PR-NORMAL { background: #F3F4F6; color: #4B5563; }
+        .PR-ELEVATED { background: #FEF08A; color: #854D0E; border: 1px solid #FDE047; }
+        .PR-CRITICAL { background: #FECACA; color: #991B1B; border: 1px solid #FCA5A5; font-weight: 900;}
+        @keyframes pulse-soft-red {
+            0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.2); }
+            70% { box-shadow: 0 0 0 6px rgba(220, 38, 38, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+        }
+        @keyframes spin-slow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .animate-spin-once {
+            animation: spin-slow 1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .input-field {
+            width: 100%;
+            height: 54px;
+            border: 2px solid #E5E7EB;
+            border-radius: 12px;
+            padding: 0 16px;
+            font-size: 15px;
+            font-weight: 600;
+            outline: none;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            color: #111827;
+            background-color: #F9FAFB;
+        }
+        .input-field:focus { 
+            border-color: #1A4B84; 
+            background-color: #FFFFFF;
+            box-shadow: 0 0 0 4px rgba(26, 75, 132, 0.1); 
+        }
+        .input-field:disabled {
+            background-color: #F3F4F6;
+            color: #9CA3AF;
+            cursor: not-allowed;
+        }
+        .input-label { 
+            display: block; 
+            font-size: 12px; 
+            font-weight: 800; 
+            color: #4B5563; 
+            margin-bottom: 8px; 
+            text-transform: uppercase; 
+            letter-spacing: 0.5px;
+        }
+        .nav-tab { 
+            cursor: pointer; 
+            transition: all 0.2s ease-in-out; 
+            position: relative; 
+            display: flex;
+            align-items: center;
+            height: 100%;
+        }
+        .nav-tab.active { 
+            color: #1A4B84; 
+            font-weight: 800; 
+        }
+        .nav-tab.active::after { 
+            content: ''; 
+            position: absolute; 
+            bottom: 0; 
+            left: 0; 
+            right: 0; 
+            height: 4px; 
+            background-color: #1A4B84; 
+            border-radius: 4px 4px 0 0; 
+        }
+        .nav-tab.inactive { 
+            color: #6B7280; 
+            font-weight: 600; 
+        }
+        .nav-tab.inactive:hover { 
+            color: #111827; 
+            background-color: rgba(243, 244, 246, 0.5);
+        }
+        .hidden-force {
+            display: none !important;
+        }
+    </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden">
+    <header class="bg-white border-b border-gray-200 h-20 flex items-center justify-between px-6 shrink-0 z-20 shadow-sm relative">
+        <div class="flex items-center gap-10 h-full">
+            <div class="flex flex-col justify-center h-full">
+                <h1 class="text-2xl font-extrabold text-[#1A4B84] tracking-tight leading-none">LOGI<span class="text-gray-900">FLOW</span></h1>
+                <span class="text-[10px] text-white bg-gray-900 px-2 py-0.5 rounded uppercase font-bold tracking-widest mt-1 w-max">Dispatcher Pro</span>
+            </div>
+            <nav class="hidden md:flex gap-8 h-full items-end">
+                <div id="tab-orders" data-target="view-orders" class="nav-tab active px-2 pb-5 tab-trigger">
+                    <span class="flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                        </svg>
+                        МАРШРУТИ ТА ШІ
+                    </span>
+                </div>
+                <div id="tab-warehouses" data-target="view-warehouses" class="nav-tab inactive px-2 pb-5 tab-trigger">
+                    <span class="flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="3" y1="9" x2="21" y2="9"></line>
+                            <line x1="9" y1="21" x2="9" y2="9"></line>
+                        </svg>
+                        СКЛАДИ (ІНВЕНТАР)
+                    </span>
+                </div>
+            </nav>
+        </div>
+        <div class="flex items-center gap-4">
+            <button id="logout-button" class="text-sm font-bold text-gray-500 hover:text-red-600 transition-colors flex items-center gap-2 bg-gray-50 hover:bg-red-50 border border-gray-200 hover:border-red-200 px-4 py-2.5 rounded-xl">
+                <span>Вихід</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"></path>
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <main class="flex-1 overflow-auto p-4 md:p-8 relative flex flex-col gap-6 w-full max-w-[1600px] mx-auto">
+        <div id="view-orders" class="flex flex-col gap-6 h-full animate__animated animate__fadeIn animate__faster tab-content">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-end shrink-0 bg-white p-6 md:p-8 rounded-[24px] border border-gray-200 shadow-sm gap-4">
+                <div>
+                    <h2 class="text-3xl font-extrabold text-gray-900 tracking-tight">Активні рейси</h2>
+                    <p class="text-sm text-gray-500 mt-2 font-medium max-w-xl">Центральна панель керування логістикою. Відстежуйте маршрути, призначайте водіїв та контролюйте автоматичні рішення модуля штучного інтелекту.</p>
+                </div>
+                <button id="btn-create-order-open" class="w-full md:w-auto h-14 px-8 bg-[#1A4B84] text-white rounded-xl font-extrabold hover:bg-[#12365e] transition-all transform active:scale-95 shadow-xl shadow-blue-900/20 flex items-center justify-center gap-3 uppercase tracking-wider">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    Створити рейс
+                </button>
+            </div>
+
+            <div class="shrink-0 flex flex-col gap-4 bg-white p-6 rounded-[24px] border border-gray-200 shadow-sm">
+                <div class="flex items-center gap-3 mb-2 border-b border-gray-100 pb-4">
+                    <div class="bg-blue-50 text-blue-600 p-2 rounded-lg">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 2a10 10 0 1 0 10 10H12V2z"></path>
+                            <path d="M22 12A10 10 0 0 0 12 2v10z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-extrabold text-gray-900 uppercase tracking-widest">Аналітичний Модуль ШІ</h3>
+                </div>
+                
+                <div id="ai-empty-state" class="bg-gray-50 border-2 border-dashed border-gray-300 rounded-2xl p-8 text-left md:text-center transition-all duration-300 block">
+                    <div class="flex flex-col items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mb-4">
+                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                        </svg>
+                        <h4 class="text-gray-700 font-extrabold text-lg mb-2">Інцидентів на маршрутах не виявлено</h4>
+                        <p class="text-gray-500 font-medium text-sm max-w-2xl text-center">
+                            Усі водії рухаються згідно із затвердженим планом. ШІ-модуль знаходиться в режимі активного моніторингу та автоматично повідомить вас у разі виникнення позаштатних ситуацій або запитів від водіїв на зміну маршруту.
+                        </p>
+                    </div>
+                </div>
+                
+                <div id="ai-alerts-container" class="flex flex-col gap-4"></div>
+            </div>
+
+            <div class="bg-white border border-gray-200 rounded-[24px] shadow-sm flex-1 overflow-hidden flex flex-col min-h-[400px]">
+                <div class="table-container overflow-auto flex-1">
+                    <table class="w-full text-left border-collapse min-w-[1100px]">
+                        <thead class="sticky top-0 bg-gray-50 z-10 shadow-sm border-b border-gray-200">
+                            <tr>
+                                <th class="p-5 text-[11px] font-black text-gray-500 uppercase tracking-widest">ID Рейсу</th>
+                                <th class="p-5 text-[11px] font-black text-gray-500 uppercase tracking-widest">Водій</th>
+                                <th class="p-5 text-[11px] font-black text-gray-500 uppercase tracking-widest">Маршрут (Звідки → Куди)</th>
+                                <th class="p-5 text-[11px] font-black text-gray-500 uppercase tracking-widest">Вантаж</th>
+                                <th class="p-5 text-[11px] font-black text-gray-500 uppercase tracking-widest">Пріоритет</th>
+                                <th class="p-5 text-[11px] font-black text-gray-500 uppercase tracking-widest">Статус</th>
+                                <th class="p-5 text-[11px] font-black text-gray-500 uppercase tracking-widest text-right">Керування</th>
+                            </tr>
+                        </thead>
+                        <tbody id="orders-table-body" class="divide-y divide-gray-100">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-warehouses" class="flex-col gap-6 h-full animate__animated animate__fadeIn animate__faster tab-content hidden-force">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-end shrink-0 bg-white p-6 md:p-8 rounded-[24px] border border-gray-200 shadow-sm gap-4">
+                <div>
+                    <h2 class="text-3xl font-extrabold text-gray-900 tracking-tight">Залишки на складах</h2>
+                    <p class="text-sm text-gray-500 mt-2 font-medium max-w-xl">Повний моніторинг інвентаря по всіх логістичних точках. Дані оновлюються в реальному часі при бронюванні та завершенні рейсів.</p>
+                </div>
+                <button id="btn-refresh-inventory" class="w-full md:w-auto h-14 px-8 bg-white border-2 border-gray-200 text-gray-700 rounded-xl font-extrabold hover:bg-gray-50 transition-colors flex items-center justify-center gap-3 uppercase tracking-wider">
+                    <svg id="refresh-inventory-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="23 4 23 10 17 10"></polyline>
+                        <polyline points="1 20 1 14 7 14"></polyline>
+                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                    </svg>
+                    Оновити дані
+                </button>
+            </div>
+
+            <div class="bg-white border border-gray-200 rounded-[24px] shadow-sm flex-1 overflow-hidden flex flex-col min-h-[400px]">
+                <div class="table-container overflow-auto flex-1">
+                    <table class="w-full text-left border-collapse min-w-[800px]">
+                        <thead class="sticky top-0 bg-gray-50 z-10 shadow-sm border-b border-gray-200">
+                            <tr>
+                                <th class="p-6 text-[11px] font-black text-gray-500 uppercase tracking-widest">Склад / Локація</th>
+                                <th class="p-6 text-[11px] font-black text-gray-500 uppercase tracking-widest">Тип товару</th>
+                                <th class="p-6 text-[11px] font-black text-gray-500 uppercase tracking-widest text-right">Наявна кількість</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventory-table-body" class="divide-y divide-gray-100">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="order-modal" class="hidden-force fixed inset-0 bg-gray-900/70 backdrop-blur-md z-[100] flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white w-full max-w-xl rounded-[28px] p-8 md:p-10 shadow-2xl animate__animated animate__zoomIn animate__faster my-8">
+            <div class="flex justify-between items-center mb-8 border-b border-gray-100 pb-4">
+                <div>
+                    <h2 class="text-2xl font-extrabold text-gray-900 uppercase tracking-tight">Новий рейс</h2>
+                    <p class="text-xs text-gray-500 font-medium mt-1">Резервування товару відбудеться миттєво</p>
+                </div>
+                <button type="button" data-close-target="order-modal" class="modal-close-btn text-gray-400 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 p-2.5 rounded-full transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            
+            <form id="create-order-form" class="space-y-6">
+                <div>
+                    <label class="input-label">Призначити водія</label>
+                    <select id="create_driver_id" name="driver_id" class="input-field cursor-pointer" required autofocus></select>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5 p-5 bg-gray-50 border border-gray-200 rounded-2xl">
+                    <div>
+                        <label class="input-label">Звідки (Відправлення)</label>
+                        <select id="create_origin_id" name="origin_id" class="input-field cursor-pointer bg-white" required></select>
+                    </div>
+                    <div>
+                        <label class="input-label">Куди (Призначення)</label>
+                        <select id="create_destination_id" name="destination_id" class="input-field cursor-pointer bg-white" required></select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                        <label class="input-label">Тип вантажу</label>
+                        <select id="create_cargo_type" name="cargo_type" class="input-field cursor-pointer" required>
+                            <option value="MEDS">Медикаменти</option>
+                            <option value="FOOD">Їжа</option>
+                            <option value="FUEL">Паливо</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="input-label">Кількість (од.)</label>
+                        <input id="create_cargo_quantity" type="number" step="0.1" name="cargo_quantity" class="input-field" placeholder="Наприклад: 150.5" required min="0.1">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="input-label">Пріоритет місії</label>
+                    <select id="create_priority" name="priority" class="input-field cursor-pointer" required>
+                        <option value="NORMAL">Звичайний</option>
+                        <option value="ELEVATED">Підвищений</option>
+                        <option value="CRITICAL">Критичний</option>
+                    </select>
+                </div>
+
+                <div class="pt-6 border-t border-gray-100 flex flex-col md:flex-row gap-4 mt-8">
+                    <button type="button" data-close-target="order-modal" class="modal-close-btn flex-1 h-14 font-extrabold text-gray-600 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors uppercase tracking-wider">Скасувати</button>
+                    <button type="submit" class="flex-[2] h-14 bg-[#1A4B84] text-white rounded-xl font-extrabold uppercase tracking-widest shadow-xl shadow-blue-900/20 hover:bg-[#12365e] transition-all transform active:scale-95">Створити рейс</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="edit-modal" class="hidden-force fixed inset-0 bg-gray-900/80 backdrop-blur-md z-[100] flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white w-full max-w-lg rounded-[28px] p-8 md:p-10 shadow-2xl animate__animated animate__zoomIn animate__faster border-t-8 border-orange-500 my-8">
+            <div class="flex justify-between items-start mb-6">
+                <div>
+                    <h2 class="text-2xl font-extrabold text-gray-900 uppercase tracking-tight">Налаштування Рейсу</h2>
+                    <p id="edit-modal-subtitle" class="text-sm text-gray-600 font-bold mt-2 bg-gray-100 inline-block px-3 py-1 rounded-lg">ID: #---</p>
+                </div>
+                <button type="button" data-close-target="edit-modal" class="modal-close-btn text-gray-400 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 p-2.5 rounded-full transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            
+            <form id="edit-order-form" class="space-y-6">
+                <input type="hidden" name="edit_order_id" id="edit_order_id">
+                
+                <div class="bg-orange-50/50 p-5 rounded-2xl border border-orange-100">
+                    <label class="input-label text-orange-900">Змінити пункт призначення</label>
+                    <select name="new_destination_id" id="edit_destination_id" class="input-field cursor-pointer bg-white border-orange-200" required></select>
+                    <p class="text-[11px] text-orange-600 mt-2 font-bold flex items-center gap-1.5">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="8" x2="12" y2="12"></line>
+                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                        </svg>
+                        Повернення на склад відправлення заблоковано
+                    </p>
+                </div>
+
+                <div>
+                    <label class="input-label">Змінити пріоритет</label>
+                    <select name="new_priority" id="edit_priority" class="input-field cursor-pointer" required>
+                        <option value="NORMAL">Звичайний</option>
+                        <option value="ELEVATED">Підвищений</option>
+                        <option value="CRITICAL">Критичний</option>
+                    </select>
+                </div>
+
+                <div class="pt-4 flex flex-col sm:flex-row gap-4">
+                    <button type="button" data-close-target="edit-modal" class="modal-close-btn flex-1 h-14 font-extrabold text-gray-600 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors uppercase">Скасувати</button>
+                    <button type="submit" class="flex-[1.5] h-14 bg-orange-500 text-white rounded-xl font-extrabold uppercase shadow-xl shadow-orange-900/20 hover:bg-orange-600 transition-transform active:scale-95 tracking-widest">Зберегти зміни</button>
+                </div>
+            </form>
+
+            <div class="mt-8 pt-8 border-t border-gray-200">
+                <h3 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">Небезпечна зона</h3>
+                <button type="button" id="btn-trigger-delete" class="w-full h-14 bg-white border-2 border-red-200 text-red-600 rounded-xl font-extrabold uppercase hover:bg-red-50 hover:border-red-300 transition-colors flex justify-center items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6"></path>
+                    </svg>
+                    Безповоротно видалити рейс
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="delete-confirm-modal" class="hidden-force fixed inset-0 bg-red-900/80 backdrop-blur-sm z-[110] flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-[24px] p-8 shadow-2xl animate__animated animate__tada">
+            <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0zM12 9v4M12 17h.01"></path>
+                </svg>
+            </div>
+            <h2 class="text-xl font-black text-center text-gray-900 mb-2 uppercase">Ви впевнені?</h2>
+            <p class="text-sm text-center text-gray-500 font-medium mb-8">Рейс буде скасовано або видалено. Вантаж повернеться на баланс складу відправлення.</p>
+            
+            <div class="flex flex-col gap-3">
+                <button type="button" id="btn-confirm-delete" class="h-14 w-full bg-red-600 text-white rounded-xl font-black uppercase tracking-widest shadow-lg shadow-red-900/30 hover:bg-red-700 transition-colors">Так, видалити</button>
+                <button type="button" data-close-target="delete-confirm-modal" class="modal-close-btn h-14 w-full bg-gray-100 text-gray-700 rounded-xl font-bold uppercase hover:bg-gray-200 transition-colors">Ні, повернутися</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-container" class="fixed bottom-6 right-6 z-[200] flex flex-col gap-3 pointer-events-none"></div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
