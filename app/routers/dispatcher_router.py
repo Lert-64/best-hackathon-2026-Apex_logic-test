@@ -8,8 +8,41 @@ from app.schemas.order_schemas import (
     OrderManualUpdateRequest
 )
 from app.services.math_engine import MathEngine
-
+from app.models.warehouse_model import Inventory
 router = APIRouter(prefix="/api/dispatcher", tags=["Dispatcher"])
+
+
+
+
+@router.get("/inventory", status_code=status.HTTP_200_OK)
+async def get_all_inventory(
+    user: is_dispatcher,
+    db: db_dep
+):
+
+
+
+    result = await db.execute(select(Inventory))
+    return result.scalars().all()
+
+
+@router.get("/orders", response_model=list[OrderResponse], status_code=status.HTTP_200_OK)
+async def get_all_orders(
+    user: is_dispatcher,
+    db: db_dep
+):
+    result = await db.execute(select(Order).order_by(Order.id.desc()))
+    return result.scalars().all()
+
+
+
+
+
+
+
+
+
+
 
 @router.post("/orders", response_model=OrderResponse, status_code=status.HTTP_201_CREATED)
 async def create_order(
