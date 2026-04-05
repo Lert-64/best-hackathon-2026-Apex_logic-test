@@ -17,7 +17,7 @@ router = APIRouter(prefix="/api/driver", tags=["Driver"])
 @router.get("/orders/current", response_model=list[OrderResponse])
 async def get_current_order(user: is_driver, db: db_dep):
     stmt = select(Order).filter(
-        Order.driverid == user.id,
+        Order.driver_id == user.id,
         Order.status.in_([
             OrderStatusEnum.PENDING,
             OrderStatusEnum.IN_PROGRESS,
