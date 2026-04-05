@@ -2,9 +2,7 @@ from datetime import timedelta
 from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select, or_
-
-
-from app.backend.dependencies import db_dep
+from app.backend.dependencies import db_dep,oauth2_scheme
 from fastapi.security import OAuth2PasswordRequestForm
 from app.models.user_model import User
 from app.backend.security import verify_token, create_access_token, verify_password, create_refresh_token
