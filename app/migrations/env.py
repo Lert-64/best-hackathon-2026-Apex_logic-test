@@ -9,9 +9,9 @@ from alembic import context
 from dotenv import load_dotenv
 
 from app.backend.db import Base
-from app.models.user import User
-from app.models.warehouse import Warehouse, Inventory
-from app.models.order import Order
+from app.models.user_model import User
+from app.models.order_model import Order
+from app.models.warehouse_model import Warehouse, Inventory
 
 # This is the Alembic Config object
 config = context.config
