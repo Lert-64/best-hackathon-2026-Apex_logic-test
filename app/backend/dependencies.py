@@ -1,4 +1,4 @@
-from sqlalchemy.sql.annotation import Annotated
+
 from .db_depends import get_db
 from typing import Annotated
 from sqlalchemy.ext.asyncio import AsyncSession
