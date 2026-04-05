@@ -38,12 +38,6 @@ async def get_all_orders(
 
 
 
-
-
-
-
-
-
 @router.post("/orders", response_model=OrderResponse, status_code=status.HTTP_201_CREATED)
 async def create_order(
         data: OrderCreateRequest,

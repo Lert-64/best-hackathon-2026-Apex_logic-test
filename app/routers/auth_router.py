@@ -8,7 +8,7 @@ from app.models.user_model import User
 from app.backend.security import verify_token, create_access_token, verify_password, create_refresh_token
 from app.schemas.auth_schemas import RefreshTokenRequest
 
-router = APIRouter(prefix="api/auth", tags=["Auth"])
+router = APIRouter(prefix="/api/auth", tags=["Auth"])
 
 
 @router.post("/refresh")
