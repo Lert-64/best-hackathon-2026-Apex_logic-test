@@ -8,7 +8,7 @@ from app.schemas.order_schemas import OrderResponse, ForceMajeureRequest
 from app.services.math_engine import MathEngine
 
 
-from app.services.ai_service import AIService, AIInputContext, WarehouseSchema
+from app.services.ai_parser import AIService, AIInputContext, WarehouseSchema
 
 router = APIRouter(prefix="/api/driver", tags=["Driver"])
 
