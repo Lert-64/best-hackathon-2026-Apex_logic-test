@@ -7,11 +7,10 @@ done
 
 echo "Database is up!"
 
-# КРИТИЧНО ДЛЯ ЖУРІ:
-# Якщо папка migrations/versions порожня, створюємо першу міграцію автоматично
+mkdir -p /app/app/migrations/versions
+
 if [ ! "$(ls -A /app/app/migrations/versions/*.py 2>/dev/null)" ]; then
     echo "No migrations found. Generating initial migration based on models..."
-    # Додаємо шлях до PYTHONPATH, щоб alembic бачив папку app
     export PYTHONPATH=$PYTHONPATH:/app
     alembic revision --autogenerate -m "Initial migration"
 fi
@@ -20,7 +19,6 @@ echo "Applying migrations..."
 alembic upgrade head
 
 echo "Seeding database..."
-# Додаємо перевірку, чи сідер не впаде через імпорти
 export PYTHONPATH=$PYTHONPATH:/app
 python seed.py
 
