@@ -101,6 +101,7 @@ async def approve_ai_proposal(
         user: is_dispatcher,
         db: db_dep
 ):
+
     res = await db.execute(select(Order).where(Order.id == order_id))
     order = res.scalar_one_or_none()
 
@@ -111,20 +112,31 @@ async def approve_ai_proposal(
         )
 
 
+    ai_reason = order.ai_reasoning
+    ai_action = order.ai_proposed_action
+    ai_dest = order.ai_proposed_dest_id
+    ai_priority = order.ai_proposed_priority
+    ai_delta = order.ai_proposed_delta
+
+
     await MathEngine.approve_ai_draft(session=db, order=order)
 
 
     update_vals = {
         "status": OrderStatusEnum.REROUTED,
-        "priority": order.ai_proposed_priority if order.ai_proposed_priority else order.priority,
-        "ai_proposed_action": None,
-        "ai_proposed_dest_id": None,
-        "ai_proposed_priority": None,
-        "ai_reasoning": f"Затверджено: {order.ai_reasoning}"
+        "priority": ai_priority if ai_priority else order.priority,
+        "ai_reasoning": f"ІНСТРУКЦІЯ ШІ (ЗАТВЕРДЖЕНО): {ai_reason}",
+
+        "ai_proposed_action": ai_action,
+        "ai_proposed_dest_id": ai_dest,
+        "ai_proposed_priority": ai_priority,
+        "ai_proposed_delta": ai_delta
     }
 
-    if order.ai_proposed_dest_id:
-        update_vals["destination_id"] = order.ai_proposed_dest_id
+
+    if ai_dest:
+        update_vals["destination_id"] = ai_dest
+
 
     await db.execute(
         update(Order)
@@ -132,6 +144,7 @@ async def approve_ai_proposal(
         .values(**update_vals)
     )
     await db.commit()
+
     return {"status": "ai_approved"}
 
 
