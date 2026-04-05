@@ -1,7 +1,7 @@
 import enum
 from sqlalchemy import String, Enum as SQLEnum
 from sqlalchemy.orm import Mapped, mapped_column
-from ..backend.db import Base
+from app.backend.db import Base
 
 
 class RoleEnum(str, enum.Enum):

@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field, ConfigDict
 from typing import Optional, List
 
-from ..models.order_model import (
+from app.models.order_model import (
     ItemTypeEnum,
     PriorityEnum,
     OrderStatusEnum,

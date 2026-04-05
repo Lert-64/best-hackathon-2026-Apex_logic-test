@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException, status
 from sqlalchemy import select, update, insert
-from ..backend.dependencies import is_dispatcher, db_dep
-from ..models.order_model import Order
-from ..schemas.order_schemas import (
+from app.backend.dependencies import is_dispatcher, db_dep
+from app.models.order_model import Order
+from app.schemas.order_schemas import (
     OrderResponse,
     OrderCreateRequest,
     OrderManualUpdateRequest

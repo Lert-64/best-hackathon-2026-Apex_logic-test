@@ -4,8 +4,8 @@ from typing import Annotated
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import Depends, HTTPException, status
 
-from   ..models.user_model import RoleEnum
-from   ..models.user_model import User
+from   app.models.user_model import RoleEnum
+from   app.models.user_model import User
 
 from fastapi.security import OAuth2PasswordBearer
 from .security import verify_token

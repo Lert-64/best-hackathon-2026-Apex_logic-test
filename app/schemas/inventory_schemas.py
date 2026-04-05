@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from ..models.order_model import ItemTypeEnum
+from app.models.order_model import ItemTypeEnum
 
 
 class InventoryDeltaItem(BaseModel):

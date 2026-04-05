@@ -2,7 +2,7 @@ from sqlalchemy import Integer, Float, ForeignKey, Enum as SQLEnum, Text
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.dialects.postgresql import JSONB
 import enum
-from ..backend.db import Base
+from app.backend.db import Base
 from .warehouse_model import ItemTypeEnum
 
 
