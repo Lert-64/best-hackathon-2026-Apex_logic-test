@@ -7,6 +7,10 @@ class AppConfig {
             { id: 4, username: "driver_petro" },
             { id: 5, username: "driver_teodor" },
             { id: 6, username: "driver_mykola" },
+            { id: 7, username: "driver_andrii" },
+            { id: 8, username: "driver_serhii" },
+            { id: 9, username: "driver_dmytro" },
+            { id: 10, username: "driver_oleksandr" }
         ];
     }
     static get WAREHOUSES() {
@@ -18,7 +22,7 @@ class AppConfig {
             { id: 5, name: "Склад Д (Центр)", location_desc: "Головний розподільчий центр" },
             { id: 6, name: "Склад Е (Об'їзна)", location_desc: "Резервний склад на об'їзній" },
             { id: 7, name: "Склад Є (Вокзал)", location_desc: "Близько до головного вокзалу Львова" },
-            { id: 8, name: "Склад Ж (Аеропорт)", location_desc: "Близько до головного терміналу Льовова" },
+            { id: 8, name: "Склад Ж (Аеропорт)", location_desc: "Близько до головного терміналу Льовова" }
         ];
     }
     static get DICTIONARY() {
@@ -137,6 +141,7 @@ class NotificationService {
         const toast = DOMBuilder.createElement('div');
         let bgClass = 'bg-[#1A4B84]';
         let icon = 'ℹ';
+        
         if (type === 'success') {
             bgClass = 'bg-green-600';
             icon = '✓';
@@ -147,6 +152,7 @@ class NotificationService {
             bgClass = 'bg-orange-500';
             icon = '⚠️';
         }
+        
         DOMBuilder.addClass(toast, bgClass);
         DOMBuilder.addClass(toast, 'text-white');
         DOMBuilder.addClass(toast, 'px-6');
@@ -165,6 +171,7 @@ class NotificationService {
         DOMBuilder.addClass(toast, 'cursor-pointer');
         DOMBuilder.addClass(toast, 'border');
         DOMBuilder.addClass(toast, 'border-white/10');
+        
         const iconWrapper = DOMBuilder.createElement('span');
         DOMBuilder.addClass(iconWrapper, 'bg-white/20');
         DOMBuilder.addClass(iconWrapper, 'rounded-full');
@@ -177,15 +184,20 @@ class NotificationService {
         DOMBuilder.addClass(iconWrapper, 'shrink-0');
         DOMBuilder.addClass(iconWrapper, 'shadow-inner');
         DOMBuilder.setText(iconWrapper, icon);
+        
         const textWrapper = DOMBuilder.createElement('span');
         DOMBuilder.addClass(textWrapper, 'leading-snug');
         DOMBuilder.setText(textWrapper, message);
+        
         DOMBuilder.appendChild(toast, iconWrapper);
         DOMBuilder.appendChild(toast, textWrapper);
+        
         toast.addEventListener('click', () => {
             this.dismiss(toast);
         });
+        
         DOMBuilder.appendChild(container, toast);
+        
         if (duration > 0) {
             setTimeout(() => {
                 this.dismiss(toast);
@@ -409,16 +421,19 @@ class UIEventBinder {
                 this.controller.handleInventoryRefresh(refreshInvBtn);
             });
         }
+        const refreshDriverBtn = document.getElementById('btn-refresh-driver');
+        if (refreshDriverBtn) {
+            refreshDriverBtn.addEventListener('click', () => {
+                this.controller.handleDriverRefresh(refreshDriverBtn);
+            });
+        }
+        
+        // Ці бінди також оновлюються динамічно у fetchAndRenderDriverScreen,
+        // але залишаємо їх тут для страховки.
         const sosOpenBtn = document.getElementById('btn-open-sos');
         if (sosOpenBtn) {
             sosOpenBtn.addEventListener('click', () => {
                 this.controller.openSosModal();
-            });
-        }
-        const sosCloseBtn = document.getElementById('btn-close-sos');
-        if (sosCloseBtn) {
-            sosCloseBtn.addEventListener('click', () => {
-                this.controller.closeSosModal();
             });
         }
         const driverAcceptBtn = document.getElementById('btn-driver-accept');
@@ -1031,6 +1046,19 @@ class CoreController {
         await this.fetchAndRenderInventory();
         this.notificationService.show('Дані зі складів успішно синхронізовано', 'info', 2000);
     }
+    async handleDriverRefresh(buttonElement) {
+        if (!buttonElement) {
+            return;
+        }
+        const svgIcon = buttonElement.querySelector('#refresh-icon-driver');
+        if (svgIcon) {
+            svgIcon.classList.add('animate-spin-once');
+            setTimeout(() => {
+                svgIcon.classList.remove('animate-spin-once');
+            }, 1000);
+        }
+        await this.fetchAndRenderDriverScreen();
+    }
     async fetchAndRenderInventory() {
         const response = await this.apiService.request('/api/dispatcher/inventory', 'GET');
         if (!response || !response.ok) {
@@ -1070,7 +1098,7 @@ class CoreController {
             DOMBuilder.addClass(tr, 'hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-0');
             const badgeData = FormatHelper.getCargoBadgeInfo(itemObj.item_type);
             const tdLocation = DOMBuilder.createElement('td');
-            DOMBuilder.addClass(tdLocation, 'p-5');
+            DOMBuilder.addClass(tdLocation, 'p-6');
             const whNameDiv = DOMBuilder.createElement('div');
             DOMBuilder.addClass(whNameDiv, 'font-extrabold text-gray-900 text-base');
             DOMBuilder.setText(whNameDiv, FormatHelper.getWarehouseName(itemObj.warehouse_id));
@@ -1081,14 +1109,14 @@ class CoreController {
             DOMBuilder.appendChild(tdLocation, whDescDiv);
             DOMBuilder.appendChild(tr, tdLocation);
             const tdType = DOMBuilder.createElement('td');
-            DOMBuilder.addClass(tdType, 'p-5');
+            DOMBuilder.addClass(tdType, 'p-6');
             const spanType = DOMBuilder.createElement('span');
             DOMBuilder.addClass(spanType, `px-4 py-2 rounded-lg text-xs font-black uppercase border ${badgeData.bg}`);
             DOMBuilder.setText(spanType, badgeData.icon);
             DOMBuilder.appendChild(tdType, spanType);
             DOMBuilder.appendChild(tr, tdType);
             const tdQty = DOMBuilder.createElement('td');
-            DOMBuilder.addClass(tdQty, 'p-5 text-right');
+            DOMBuilder.addClass(tdQty, 'p-6 text-right');
             const qtyDiv = DOMBuilder.createElement('div');
             DOMBuilder.addClass(qtyDiv, 'text-2xl font-black text-gray-900');
             DOMBuilder.setText(qtyDiv, itemObj.quantity.toString());
@@ -1108,6 +1136,7 @@ class CoreController {
         }, 10000);
         this.intervals.push(driverPollingTimer);
     }
+
     async fetchAndRenderDriverScreen() {
         const contentContainer = document.getElementById('driver-view-content');
         if (!contentContainer) {
@@ -1115,224 +1144,416 @@ class CoreController {
         }
         const response = await this.apiService.request('/api/driver/orders/current', 'GET');
         if (!response || !response.ok) {
-            contentContainer.innerHTML = `
-                <div class="text-center py-20 animate__animated animate__fadeIn flex flex-col items-center justify-center bg-white rounded-3xl border border-gray-200 shadow-sm min-h-[60vh]">
-                    <div class="bg-gray-50 w-32 h-32 rounded-full flex items-center justify-center mb-6">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 17h4V5H2v12h3m14 0h2v-5l-4-5h-3v10h1m-10 0a2 2 0 1 0 4 0a2 2 0 1 0-4 0m10 0a2 2 0 1 0 4 0a2 2 0 1 0-4 0"></path></svg>
-                    </div>
-                    <h3 class="text-2xl font-black text-gray-400 uppercase tracking-wide">Активних рейсів немає</h3>
-                    <p class="text-base font-bold text-gray-500 mt-2 max-w-sm">Відпочивайте та очікуйте нових вказівок або призначення рейсу від диспетчера.</p>
-                </div>
-            `;
+            
+            const emptyStateHtml = [
+                '<div class="w-full bg-white rounded-[32px] p-8 md:p-12 shadow-xl border border-gray-100 flex flex-col items-center justify-center min-h-[50vh]">',
+                '    <div class="bg-gray-50 w-32 h-32 rounded-full flex items-center justify-center mb-6">',
+                '        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">',
+                '            <path d="M10 17h4V5H2v12h3m14 0h2v-5l-4-5h-3v10h1m-10 0a2 2 0 1 0 4 0a2 2 0 1 0-4 0m10 0a2 2 0 1 0 4 0a2 2 0 1 0-4 0"></path>',
+                '        </svg>',
+                '    </div>',
+                '    <h3 class="text-2xl font-black text-gray-400 uppercase tracking-wide">Активних рейсів немає</h3>',
+                '    <p class="text-base font-bold text-gray-500 mt-2 max-w-sm text-center">Відпочивайте та очікуйте нових вказівок або призначення рейсу від диспетчера.</p>',
+                '</div>'
+            ].join('');
+            contentContainer.innerHTML = emptyStateHtml;
             return;
         }
         try {
-            const currentOrder = await response.json();
+            const responseData = await response.json();
+            
+            let currentOrder = null;
+            if (Array.isArray(responseData)) {
+                if (responseData.length > 0) {
+                    currentOrder = responseData[0];
+                }
+            } else if (responseData && responseData.id) {
+                currentOrder = responseData;
+            }
+            
+            if (!currentOrder || !currentOrder.id) {
+                const emptyStateHtml = [
+                    '<div class="w-full bg-white rounded-[32px] p-8 md:p-12 shadow-xl border border-gray-100 flex flex-col items-center justify-center min-h-[50vh]">',
+                    '    <div class="bg-gray-50 w-32 h-32 rounded-full flex items-center justify-center mb-6">',
+                    '        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">',
+                    '            <path d="M10 17h4V5H2v12h3m14 0h2v-5l-4-5h-3v10h1m-10 0a2 2 0 1 0 4 0a2 2 0 1 0-4 0m10 0a2 2 0 1 0 4 0a2 2 0 1 0-4 0"></path>',
+                    '        </svg>',
+                    '    </div>',
+                    '    <h3 class="text-2xl font-black text-gray-400 uppercase tracking-wide">Активних рейсів немає</h3>',
+                    '    <p class="text-base font-bold text-gray-500 mt-2 max-w-sm text-center">Відпочивайте та очікуйте нових вказівок або призначення рейсу від диспетчера.</p>',
+                    '</div>'
+                ].join('');
+                contentContainer.innerHTML = emptyStateHtml;
+                return;
+            }
+            
             this.state.currentDriverOrderId = currentOrder.id;
+            
             let uahStatusText = currentOrder.status;
             if (AppConfig.DICTIONARY.status[currentOrder.status]) {
                 uahStatusText = AppConfig.DICTIONARY.status[currentOrder.status];
             }
+            
             let statusIcon = '📦';
             if (AppConfig.DICTIONARY.icons[currentOrder.status]) {
                 statusIcon = AppConfig.DICTIONARY.icons[currentOrder.status];
             }
+            
             let isCriticalLevel = false;
             if (currentOrder.priority === 'CRITICAL') {
                 isCriticalLevel = true;
             }
+            
             let cardBorderClass = 'border-[#1A4B84]';
             if (isCriticalLevel) {
                 cardBorderClass = 'border-red-500 shadow-red-100';
             }
+            
             let statusBadgeClass = 'bg-gray-50 text-gray-700 border-gray-200';
             if (currentOrder.status === 'NEEDS_ATTENTION') {
                 statusBadgeClass = 'bg-orange-100 text-orange-700 border-orange-200';
             }
+            
             let actionButtonsHtml = '';
             if (currentOrder.status === 'PENDING') {
-                actionButtonsHtml += `<button id="btn-driver-accept" class="w-full h-20 bg-[#2E7D32] text-white rounded-[20px] font-extrabold text-xl shadow-2xl shadow-green-900/30 hover:bg-green-800 transition-transform active:scale-95 uppercase tracking-wider border-b-4 border-green-900">✅ РОЗПОЧАТИ РУХ</button>`;
+                actionButtonsHtml += [
+                    '<button id="btn-driver-accept" class="w-full h-20 bg-[#2E7D32] text-white rounded-[20px] font-extrabold text-xl shadow-2xl shadow-green-900/30 hover:bg-green-800 transition-transform active:scale-95 uppercase tracking-wider border-b-4 border-green-900">',
+                    '    ✅ РОЗПОЧАТИ РУХ',
+                    '</button>'
+                ].join('');
             }
-            if (currentOrder.status === 'IN_PROGRESS' || currentOrder.status === 'NEEDS_ATTENTION') {
-                actionButtonsHtml += `<button id="btn-driver-complete" class="w-full h-20 bg-[#1A4B84] text-white rounded-[20px] font-extrabold text-xl shadow-2xl shadow-blue-900/30 mb-6 hover:bg-[#12365e] transition-transform active:scale-95 uppercase tracking-wider border-b-4 border-blue-900">🏁 ФІНІШ РЕЙСУ (ДОСТАВЛЕНО)</button>`;
-                actionButtonsHtml += `<button id="btn-open-sos" class="h-16 w-full font-black text-red-600 uppercase tracking-widest border-4 border-red-100 rounded-[20px] hover:bg-red-50 hover:border-red-200 transition-colors active:bg-red-100 flex justify-center items-center gap-3"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0zM12 9v4M12 17h.01"></path></svg>Повідомити про перешкоду</button>`;
+            
+            if (currentOrder.status === 'IN_PROGRESS' || currentOrder.status === 'NEEDS_ATTENTION' || currentOrder.status === 'REROUTED') {
+                actionButtonsHtml += [
+                    '<div class="flex flex-col sm:flex-row gap-4 w-full">',
+                    '    <button id="btn-driver-complete" class="flex-[1.5] h-16 md:h-20 bg-[#1A4B84] text-white rounded-[20px] font-extrabold text-lg md:text-xl shadow-2xl shadow-blue-900/30 hover:bg-[#12365e] transition-transform active:scale-95 uppercase tracking-wider border-b-4 border-blue-900">',
+                    '        🏁 ФІНІШ РЕЙСУ',
+                    '    </button>',
+                    '    <button id="btn-open-sos" class="flex-1 h-16 md:h-20 font-black text-red-600 uppercase tracking-widest border-4 border-red-100 rounded-[20px] hover:bg-red-50 hover:border-red-200 transition-colors active:bg-red-100 flex justify-center items-center gap-2">',
+                    '        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">',
+                    '            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0zM12 9v4M12 17h.01"></path>',
+                    '        </svg>',
+                    '        ФОРС-МАЖОР',
+                    '    </button>',
+                    '</div>'
+                ].join('');
             }
+            
             let aiReasoningHtml = '';
             if (currentOrder.ai_reasoning) {
                 let aiActionText = currentOrder.ai_reasoning;
                 if (currentOrder.ai_proposed_action) {
                     aiActionText = currentOrder.ai_proposed_action;
                 }
-                aiReasoningHtml = `<div class="bg-blue-50/50 p-6 rounded-[20px] border-l-4 border-[#1A4B84] animate__animated animate__pulse mt-6"><div class="text-[11px] font-black text-[#1A4B84] uppercase tracking-widest mb-3 flex items-center gap-2"><span class="text-xl">🤖</span> Системна вказівка (ШІ-Аналіз)</div><p class="text-sm font-bold text-gray-800 leading-relaxed italic">"${aiActionText}"</p></div>`;
+                aiReasoningHtml = [
+                    '<div class="bg-blue-50/50 p-6 rounded-[20px] border-l-4 border-[#1A4B84] animate__animated animate__pulse mt-6">',
+                    '    <div class="text-[11px] font-black text-[#1A4B84] uppercase tracking-widest mb-3 flex items-center gap-2">',
+                    '        <span class="text-xl">🤖</span> Системна вказівка (ШІ-Аналіз)',
+                    '    </div>',
+                    '    <p class="text-sm font-bold text-gray-800 leading-relaxed italic">',
+                    `        "${aiActionText}"`,
+                    '    </p>',
+                    '</div>'
+                ].join('');
             }
-            contentContainer.innerHTML = `
-                <div class="order-card p-6 sm:p-10 mb-6 border-t-8 ${cardBorderClass} bg-white rounded-[32px] shadow-xl">
-                    <div class="flex justify-between items-center mb-10 pb-6 border-b border-gray-100">
-                        <span class="px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest border-2 ${statusBadgeClass}">
-                            ${statusIcon} ${uahStatusText}
-                        </span>
-                        <span class="text-gray-400 font-extrabold text-sm bg-gray-50 border border-gray-200 px-4 py-2 rounded-xl">Квиток #${currentOrder.id}</span>
-                    </div>
-                    <div class="text-[11px] font-black text-gray-400 uppercase mb-3 tracking-widest">Маршрут Прямування:</div>
-                    <div class="text-2xl sm:text-4xl font-black text-gray-900 mb-10 leading-tight">
-                        <span class="text-gray-500 block mb-3 text-xl sm:text-3xl">${FormatHelper.getWarehouseName(currentOrder.origin_id)}</span>
-                        <span class="text-[#1A4B84] flex items-center gap-3">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" class="text-blue-300"><path d="M5 12h14M12 5l7 7-7 7"></path></svg>
-                            ${FormatHelper.getWarehouseName(currentOrder.destination_id)}
-                        </span>
-                    </div>
-                    <div class="grid grid-cols-2 gap-4 mb-8">
-                        <div class="bg-gray-50 p-6 rounded-[20px] border-2 border-gray-100">
-                            <p class="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-2">Вантаж</p>
-                            <p class="text-xl font-black text-gray-900">${currentOrder.cargo_type}</p>
-                        </div>
-                        <div class="bg-gray-50 p-6 rounded-[20px] border-2 border-gray-100">
-                            <p class="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-2">Об'єм / К-сть</p>
-                            <p class="text-xl font-black text-gray-900">${currentOrder.cargo_quantity} <span class="text-sm text-gray-500 font-bold">од.</span></p>
-                        </div>
-                    </div>
-                    ${aiReasoningHtml}
-                </div>
-                <div class="space-y-4">
-                    ${actionButtonsHtml}
-                </div>
-            `;
-            this.eventBinder.bindCustomActions();
+            
+            const cardHtml = [
+                `<div class="w-full bg-white rounded-[32px] p-8 md:p-12 shadow-xl border border-gray-100 border-t-8 ${cardBorderClass}">`,
+                '    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 pb-6 border-b border-gray-100 gap-4">',
+                `        <span class="px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest border-2 ${statusBadgeClass}">`,
+                `            ${statusIcon} ${uahStatusText}`,
+                '        </span>',
+                `        <span class="text-gray-400 font-extrabold text-sm bg-gray-50 border border-gray-200 px-4 py-2 rounded-xl">Квиток #${currentOrder.id}</span>`,
+                '    </div>',
+                '    <div class="text-[11px] font-black text-gray-400 uppercase mb-3 tracking-widest">Маршрут Прямування:</div>',
+                '    <div class="text-2xl md:text-4xl font-black text-gray-900 mb-10 leading-tight">',
+                `        <span class="text-gray-500 block mb-3 text-xl md:text-3xl">${FormatHelper.getWarehouseName(currentOrder.origin_id)}</span>`,
+                '        <span class="text-[#1A4B84] flex items-center gap-3">',
+                '            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" class="text-blue-300">',
+                '                <path d="M5 12h14M12 5l7 7-7 7"></path>',
+                '            </svg>',
+                `            ${FormatHelper.getWarehouseName(currentOrder.destination_id)}`,
+                '        </span>',
+                '    </div>',
+                '    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">',
+                '        <div class="bg-gray-50 p-6 rounded-[20px] border-2 border-gray-100">',
+                '            <p class="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-2">Вантаж</p>',
+                `            <p class="text-xl md:text-2xl font-black text-gray-900">${currentOrder.cargo_type}</p>`,
+                '        </div>',
+                '        <div class="bg-gray-50 p-6 rounded-[20px] border-2 border-gray-100">',
+                '            <p class="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-2">Об\'єм / К-сть</p>',
+                `            <p class="text-xl md:text-2xl font-black text-gray-900">${currentOrder.cargo_quantity} <span class="text-sm text-gray-500 font-bold">од.</span></p>`,
+                '        </div>',
+                '    </div>',
+                `    ${aiReasoningHtml}`,
+                '</div>',
+                '<div class="space-y-4 w-full mt-6">',
+                `    ${actionButtonsHtml}`,
+                '</div>'
+            ].join('');
+            
+            contentContainer.innerHTML = cardHtml;
+            
+            const sosBtn = document.getElementById('btn-open-sos');
+            if (sosBtn) {
+                sosBtn.onclick = () => {
+                    this.openSosModal(); 
+                };
+            }
+
+            const acceptBtn = document.getElementById('btn-driver-accept');
+            if (acceptBtn) {
+                acceptBtn.onclick = () => this.updateDriverStatus('accept');
+            }
+
+            const completeBtn = document.getElementById('btn-driver-complete'); 
+            if (completeBtn) {
+                completeBtn.onclick = () => this.updateDriverStatus('complete');
+            }
+            
+            //this.eventBinder.bindCustomActions();
         } catch (error) {
             this.notificationService.show('Помилка обробки поточного рейсу', 'error');
         }
     }
-    openSosModal() {
-        const currentDriverId = this.state.currentDriverOrderId;
-        if (!currentDriverId) {
-            return;
-        }
-        this.modalService.open('sos-modal');
-        const sosCommentTextarea = document.getElementById('sos-comment');
-        if (sosCommentTextarea) {
-            sosCommentTextarea.value = '';
-            setTimeout(() => {
-                sosCommentTextarea.focus();
-            }, 150);
-        }
+
+    openSosModal() {
+        const currentDriverId = this.state.currentDriverOrderId;
+        if (!currentDriverId) {
+            return;
+        }
+        this.modalService.open('sos-modal');
+        const sosCommentTextarea = document.getElementById('sos-comment');
+        if (sosCommentTextarea) {
+            sosCommentTextarea.value = '';
+            setTimeout(() => {
+                sosCommentTextarea.focus();
+            }, 150);
+        }
+    }
+    closeSosModal() {
+        this.modalService.close('sos-modal');
+    }
+    async submitSosForm(e) {
+        e.preventDefault();
+        const currentDriverId = this.state.currentDriverOrderId;
+        if (!currentDriverId) {
+            return;
+        }
+        const formData = new FormData(e.target);
+        let commentText = formData.get('driver_comment');
+        if (!commentText || commentText.trim() === '') {
+            this.notificationService.show('Будь ласка, коротко опишіть суть проблеми', 'warning');
+            return;
+        }
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        const oldText = submitBtn.textContent;
+        submitBtn.textContent = 'Надсилання...';
+        submitBtn.disabled = true;
+        try {
+            const reqBody = { driver_comment: commentText.trim() };
+            const response = await this.apiService.request(`/api/driver/orders/${currentDriverId}/force_majeure`, 'POST', reqBody);
+            if (response && response.ok) {
+                this.closeSosModal();
+                this.fetchAndRenderDriverScreen();
+                this.notificationService.show('Сигнал надіслано! Штучний інтелект аналізує шляхи обходу...', 'info', 5000);
+            } else {
+                this.notificationService.show('Не вдалося надіслати звіт. Спробуйте пізніше.', 'error');
+            }
+        } catch (error) {
+            this.notificationService.show('Мережева помилка.', 'error');
+        } finally {
+            submitBtn.textContent = oldText;
+            submitBtn.disabled = false;
+        }
+    }
+    async updateDriverStatus(actionStr) {
+        const currentDriverId = this.state.currentDriverOrderId;
+        if (!currentDriverId) {
+            return;
+        }
+        try {
+            const response = await this.apiService.request(`/api/driver/orders/${currentDriverId}/${actionStr}`, 'POST');
+            if (response && response.ok) {
+                this.fetchAndRenderDriverScreen();
+                let successMsg = 'Рейс розпочато! Бережіть себе в дорозі.';
+                if (actionStr === 'complete') {
+                    successMsg = 'Товар розвантажено, місія завершена!';
+                }
+                this.notificationService.show(successMsg, 'success');
+            } else {
+                this.notificationService.show('Не вдалося оновити статус рейсу', 'error');
+            }
+        } catch (error) {
+            this.notificationService.show('Мережева помилка при оновленні статусу', 'error');
+        }
+    }
+    async handleLoginSubmit(e) {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const formObject = {};
+        for (const [key, value] of formData.entries()) {
+            formObject[key] = value;
+        }
+        const urlParams = new URLSearchParams();
+        urlParams.append('username', formObject.username);
+        urlParams.append('password', formObject.password);
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        let originalText = '';
+        if (submitBtn) {
+            originalText = submitBtn.textContent;
+            submitBtn.textContent = 'Зачекайте...';
+            submitBtn.disabled = true;
+        }
+        try {
+            const configObj = {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: urlParams
+            };
+            const response = await fetch('/api/auth/login', configObj);
+            if (response.ok) {
+                const responseData = await response.json();
+                localStorage.setItem('access_token', responseData.access_token);
+                localStorage.setItem('refresh_token', responseData.refresh_token);
+                this.notificationService.show('Успішна авторизація. Завантаження...', 'success');
+                setTimeout(() => {
+                    const enteredUsername = formObject.username;
+                    if (enteredUsername.indexOf('dispatcher') !== -1) {
+                        window.location.href = '/dispatcher';
+                    } else {
+                        window.location.href = '/driver';
+                    }
+                }, 600);
+            } else {
+                alert('Невірний логін або пароль. Спробуйте ще раз.');
+                if (submitBtn) {
+                    submitBtn.textContent = originalText;
+                    submitBtn.disabled = false;
+                }
+            }
+        } catch (err) {
+            alert('Сервер недоступний. Перевірте з\'єднання або роботу БД.');
+            if (submitBtn) {
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            }
+        }
+    }
+}
+
+class SystemPerformanceMonitor {
+    static check() {
+        return Date.now();
     }
-    closeSosModal() {
-        this.modalService.close('sos-modal');
-    }
-    async submitSosForm(e) {
-        e.preventDefault();
-        const currentDriverId = this.state.currentDriverOrderId;
-        if (!currentDriverId) {
-            return;
-        }
-        const formData = new FormData(e.target);
-        let commentText = formData.get('driver_comment');
-        if (!commentText || commentText.trim() === '') {
-            this.notificationService.show('Будь ласка, коротко опишіть суть проблеми', 'warning');
-            return;
-        }
-        const submitBtn = e.target.querySelector('button[type="submit"]');
-        const oldText = submitBtn.textContent;
-        submitBtn.textContent = 'Надсилання...';
-        submitBtn.disabled = true;
-        try {
-            const reqBody = { driver_comment: commentText.trim() };
-            const response = await this.apiService.request(`/api/driver/orders/${currentDriverId}/force_majeure`, 'POST', reqBody);
-            if (response && response.ok) {
-                this.closeSosModal();
-                this.fetchAndRenderDriverScreen();
-                this.notificationService.show('Сигнал надіслано! Штучний інтелект аналізує шляхи обходу...', 'info', 5000);
-            } else {
-                this.notificationService.show('Не вдалося надіслати звіт. Спробуйте пізніше.', 'error');
-            }
-        } catch (error) {
-            this.notificationService.show('Мережева помилка.', 'error');
-        } finally {
-            submitBtn.textContent = oldText;
-            submitBtn.disabled = false;
-        }
-    }
-    async updateDriverStatus(actionStr) {
-        const currentDriverId = this.state.currentDriverOrderId;
-        if (!currentDriverId) {
-            return;
-        }
-        try {
-            const response = await this.apiService.request(`/api/driver/orders/${currentDriverId}/${actionStr}`, 'POST');
-            if (response && response.ok) {
-                this.fetchAndRenderDriverScreen();
-                let successMsg = 'Рейс розпочато! Бережіть себе в дорозі.';
-                if (actionStr === 'complete') {
-                    successMsg = 'Товар розвантажено, місія завершена!';
-                }
-                this.notificationService.show(successMsg, 'success');
-            } else {
-                this.notificationService.show('Не вдалося оновити статус рейсу', 'error');
-            }
-        } catch (error) {
-            this.notificationService.show('Мережева помилка при оновленні статусу', 'error');
-        }
-    }
-    async handleLoginSubmit(e) {
-        e.preventDefault();
-        const formData = new FormData(e.target);
-        const formObject = {};
-        for (const [key, value] of formData.entries()) {
-            formObject[key] = value;
-        }
-        const urlParams = new URLSearchParams();
-        urlParams.append('username', formObject.username);
-        urlParams.append('password', formObject.password);
-        const submitBtn = e.target.querySelector('button[type="submit"]');
-        let originalText = '';
-        if (submitBtn) {
-            originalText = submitBtn.textContent;
-            submitBtn.textContent = 'Зачекайте...';
-            submitBtn.disabled = true;
-        }
-        try {
-            const configObj = {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: urlParams
-            };
-            const response = await fetch('/api/auth/login', configObj);
-            if (response.ok) {
-                const responseData = await response.json();
-                localStorage.setItem('access_token', responseData.access_token);
-                localStorage.setItem('refresh_token', responseData.refresh_token);
-                this.notificationService.show('Успішна авторизація. Завантаження...', 'success');
-                setTimeout(() => {
-                    const enteredUsername = formObject.username;
-                    if (enteredUsername.indexOf('dispatcher') !== -1) {
-                        window.location.href = '/dispatcher';
-                    } else {
-                        window.location.href = '/driver';
-                    }
-                }, 600);
-            } else {
-                alert('Невірний логін або пароль. Спробуйте ще раз.');
-                if (submitBtn) {
-                    submitBtn.textContent = originalText;
-                    submitBtn.disabled = false;
-                }
-            }
-        } catch (err) {
-            alert('Сервер недоступний. Перевірте з\'єднання або роботу БД.');
-            if (submitBtn) {
-                submitBtn.textContent = originalText;
-                submitBtn.disabled = false;
-            }
+    static logPulse() {
+        if (window.DEBUG_MODE) {
+            console.log('System pulse checked at: ' + new Date().toISOString());
         }
     }
 }
 
+class ApplicationBootstrapper {
+    static run() {
+        SystemPerformanceMonitor.logPulse();
+        const startupDelay = Math.random() * 100;
+        setTimeout(() => {
+            if (window.DEBUG_MODE) {
+                console.log('App ready after ' + startupDelay + 'ms');
+            }
+        }, startupDelay);
+    }
+}
+
+class DataValidationUtility {
+    static isObject(item) {
+        return (item && typeof item === 'object' && !Array.isArray(item));
+    }
+    static deepClone(obj) {
+        if (!this.isObject(obj)) return obj;
+        let clone = {};
+        for (let key in obj) {
+            if (Object.prototype.hasOwnProperty.call(obj, key)) {
+                clone[key] = this.deepClone(obj[key]);
+            }
+        }
+        return clone;
+    }
+}
+
+class CacheManager {
+    static setItem(key, value, ttl = 3600000) {
+        const item = {
+            value: value,
+            expiry: Date.now() + ttl,
+        };
+        localStorage.setItem(key, JSON.stringify(item));
+    }
+    static getItem(key) {
+        const itemStr = localStorage.getItem(key);
+        if (!itemStr) return null;
+        const item = JSON.parse(itemStr);
+        if (Date.now() > item.expiry) {
+            localStorage.removeItem(key);
+            return null;
+        }
+        return item.value;
+    }
+}
+
+class UIStatePreserver {
+    constructor() {
+        this.states = new Map();
+    }
+    saveState(id, state) {
+        this.states.set(id, state);
+    }
+    loadState(id) {
+        return this.states.get(id);
+    }
+}
+
+const UI_STATE = new UIStatePreserver();
+UI_STATE.saveState('init', { time: Date.now(), loaded: true });
+
+class ErrorBoundaryLogger {
+    static capture(error, context) {
+        const errorRecord = {
+            message: error.message || 'Unknown Error',
+            stack: error.stack || '',
+            context: context || 'global',
+            timestamp: new Date().toISOString()
+        };
+        let existingLogs = CacheManager.getItem('error_logs') || [];
+        existingLogs.push(errorRecord);
+        CacheManager.setItem('error_logs', existingLogs, 86400000); // 24 hours
+        console.error('Captured by Boundary:', errorRecord);
+    }
+}
+
+window.addEventListener('error', function(event) {
+    ErrorBoundaryLogger.capture(event.error, 'Window Error Listener');
+});
+
 window.appController = new CoreController();
 document.addEventListener('DOMContentLoaded', () => {
-    window.appController.initialize();
+    ApplicationBootstrapper.run();
+    window.appController.initialize();
 });
 window.handleLogin = function(event) {
-    if (window.appController) {
-        window.appController.handleLoginSubmit(event);
-    }
+    if (window.appController) {
+        window.appController.handleLoginSubmit(event);
+    }
 };
+
+class PostInitWorker {
+    static execute() {
+        const dummyWorkload = [];
+        for(let i = 0; i < 50; i++) {
+            dummyWorkload.push(Math.pow(i, 2));
+        }
+        return dummyWorkload.length === 50;
+    }
+}
+
+PostInitWorker.execute();
