@@ -3,54 +3,148 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Панель водія | LogiFlow</title>
+    <meta name="theme-color" content="#1A4B84">
+    <title>Панель Водія | LogiFlow Apex Ultra</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
-        body { background-color: #F5F7FA; font-family: 'Inter', sans-serif; color: #1D2127; }
-        .btn-action { height: 60px; border-radius: 16px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; transition: all 0.2s; display: flex; align-items: center; justify-content: center; width: 100%; }
-        .order-card { background: #FFFFFF; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); }
-        .status-badge { padding: 4px 12px; border-radius: 8px; font-size: 12px; font-weight: 800; text-transform: uppercase; }
-        /* Кольори статусів */
-        .status-pending { background: #E5E7EB; color: #4B5563; }
-        .status-progress { background: #DBEAFE; color: #1A4B84; }
-        .status-attention { background: #FFEDD5; color: #EA580C; }
-        .status-completed { background: #DCFCE7; color: #166534; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        body {
+            background-color: #F3F4F6;
+            font-family: 'Inter', sans-serif;
+            color: #111827;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        .status-badge {
+            padding: 8px 16px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+        .ST-PENDING { background: #F3F4F6; color: #4B5563; border: 2px solid #E5E7EB; }
+        .ST-IN_PROGRESS { background: #EFF6FF; color: #1D4ED8; border: 2px solid #BFDBFE; }
+        .ST-NEEDS_ATTENTION { background: #FEF2F2; color: #DC2626; border: 2px solid #FECACA; animation: pulse-soft-red 2s infinite; }
+        .ST-REROUTED { background: #FAF5FF; color: #7E22CE; border: 2px solid #E9D5FF; }
+        .ST-COMPLETED { background: #F0FDF4; color: #15803D; border: 2px solid #BBF7D0; }
+        .PR-NORMAL { background: #F3F4F6; color: #4B5563; }
+        .PR-ELEVATED { background: #FEF08A; color: #854D0E; border: 1px solid #FDE047; }
+        .PR-CRITICAL { background: #FECACA; color: #991B1B; border: 1px solid #FCA5A5; font-weight: 900; }
+        @keyframes pulse-soft-red {
+            0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.3); }
+            70% { box-shadow: 0 0 0 10px rgba(220, 38, 38, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+        }
+        @keyframes spin-slow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .animate-spin-once {
+            animation: spin-slow 1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .hidden-force {
+            display: none !important;
+        }
     </style>
 </head>
-<body class="min-h-screen flex flex-col">
-
-    <header class="bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center sticky top-0 z-40">
-        <div>
-            <h1 class="text-lg font-extrabold text-[#1A4B84]">DRIVER PANEL</h1>
-            <p id="driver-name" class="text-xs font-bold text-slate-500 uppercase tracking-widest">Завантаження...</p>
+<body class="min-h-screen flex flex-col overflow-hidden">
+    <header class="bg-white border-b border-gray-200 h-20 md:h-24 flex items-center justify-between px-4 md:px-8 shrink-0 z-20 shadow-sm relative">
+        <div class="flex items-center gap-4 h-full">
+            <div class="bg-[#1A4B84] w-12 h-12 md:w-14 md:h-14 rounded-xl flex items-center justify-center shadow-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="1" y="3" width="15" height="13"></rect>
+                    <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+                    <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                    <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                </svg>
+            </div>
+            <div class="flex flex-col justify-center h-full">
+                <h1 class="text-xl md:text-2xl font-extrabold text-[#1A4B84] tracking-tight leading-none">LOGI<span class="text-gray-900">FLOW</span></h1>
+                <span class="text-[10px] md:text-xs text-white bg-gray-900 px-2 py-0.5 rounded uppercase font-bold tracking-widest mt-1 w-max">Driver Panel</span>
+            </div>
         </div>
-        <button onclick="logout()" class="p-2 bg-slate-100 rounded-xl">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
-        </button>
+        <div class="flex items-center gap-4">
+            <button id="logout-button" class="h-12 w-12 md:w-auto md:px-6 md:h-14 bg-gray-50 border border-gray-200 text-gray-500 rounded-xl font-bold hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors flex items-center justify-center gap-2">
+                <span class="hidden md:block uppercase tracking-wider text-xs">Вийти</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"></path>
+                </svg>
+            </button>
+        </div>
     </header>
 
-    <main class="flex-1 p-6 max-w-2xl mx-auto w-full">
-        <div id="driver-view-content">
-            <div class="animate-pulse space-y-4">
-                <div class="h-40 bg-white rounded-3xl"></div>
-                <div class="h-14 bg-slate-200 rounded-2xl w-full"></div>
+    <main class="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-8 relative w-full max-w-4xl mx-auto flex flex-col">
+        <div class="mb-6 flex justify-between items-center">
+            <div>
+                <h2 class="text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight">Поточний рейс</h2>
+                <p class="text-sm text-gray-500 mt-1 font-medium">Керування логістичним завданням</p>
+            </div>
+            <button id="btn-refresh-driver" class="h-12 w-12 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 flex items-center justify-center shadow-sm">
+                <svg id="refresh-icon-driver" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="23 4 23 10 17 10"></polyline>
+                    <polyline points="1 20 1 14 7 14"></polyline>
+                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                </svg>
+            </button>
+        </div>
+
+        <div id="driver-view-content" class="flex-1 w-full animate__animated animate__fadeIn">
+            <div class="w-full bg-white rounded-[32px] p-8 md:p-12 shadow-xl border border-gray-100 flex flex-col items-center justify-center min-h-[50vh]">
+                <div class="animate-pulse flex flex-col items-center w-full">
+                    <div class="h-24 w-24 bg-gray-200 rounded-full mb-6"></div>
+                    <div class="h-6 w-48 bg-gray-200 rounded-lg mb-4"></div>
+                    <div class="h-4 w-64 bg-gray-200 rounded-lg mb-10"></div>
+                    <div class="w-full h-20 bg-gray-100 rounded-2xl"></div>
+                </div>
             </div>
         </div>
     </main>
 
-    <div id="sos-modal" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4">
-        <div class="bg-white w-full max-w-lg rounded-t-[32px] sm:rounded-[32px] p-8 animate__animated animate__slideInUp">
-            <h2 class="text-2xl font-extrabold mb-2">ПОВІДОМИТИ ПРО ПРОБЛЕМУ</h2>
-            <p class="text-slate-500 text-sm mb-6">Опишіть ситуацію, ШІ проаналізує її миттєво.</p>
-            <textarea id="sos-comment" placeholder="Наприклад: ДТП на перехресті, затримка 40 хв..." class="w-full h-40 p-4 border-2 border-slate-200 rounded-2xl outline-none focus:border-[#1A4B84] text-lg mb-6"></textarea>
-            <div class="flex gap-4">
-                <button onclick="closeSOS()" class="flex-1 h-14 font-bold text-slate-500 uppercase">Скасувати</button>
-                <button onclick="submitSOS()" class="flex-[2] h-14 bg-[#E53935] text-white rounded-2xl font-extrabold uppercase">Відправити</button>
+    <div id="sos-modal" class="hidden-force fixed inset-0 bg-gray-900/90 backdrop-blur-md z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto">
+        <div class="bg-white w-full sm:max-w-lg rounded-t-[32px] sm:rounded-[32px] p-6 sm:p-10 shadow-2xl animate__animated animate__slideInUp sm:animate__zoomIn">
+            <div class="flex justify-between items-start mb-6">
+                <div class="flex gap-4 items-center">
+                    <div class="w-14 h-14 bg-red-100 rounded-2xl flex items-center justify-center shrink-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0zM12 9v4M12 17h.01"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-xl sm:text-2xl font-extrabold text-gray-900 uppercase tracking-tight leading-none">Форс-мажор</h2>
+                        <p class="text-xs text-gray-500 font-bold mt-2 uppercase tracking-widest">Екстрене звернення</p>
+                    </div>
+                </div>
+                <button type="button" data-close-target="sos-modal" class="modal-close-btn text-gray-400 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 p-3 rounded-full transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
             </div>
+            
+            <form id="sos-form" class="space-y-6 mt-8">
+                <div>
+                    <label class="block text-sm font-black text-gray-700 uppercase tracking-wide mb-3">Опис ситуації</label>
+                    <textarea id="sos-comment" name="driver_comment" rows="5" class="w-full border-2 border-gray-200 rounded-2xl p-5 text-lg font-medium outline-none focus:border-red-500 focus:ring-4 focus:ring-red-100 transition-all resize-none bg-gray-50 focus:bg-white" placeholder="Наприклад: ДТП на маршруті, дорогу перекрито..." required></textarea>
+                </div>
+                <div class="pt-2 flex flex-col sm:flex-row gap-4 mt-8">
+                    <button type="button" data-close-target="sos-modal" class="modal-close-btn w-full sm:flex-1 h-16 font-extrabold text-gray-600 bg-gray-100 rounded-[20px] hover:bg-gray-200 transition-colors uppercase tracking-widest text-sm">Скасувати</button>
+                    <button type="submit" class="w-full sm:flex-[1.5] h-16 bg-red-600 text-white rounded-[20px] font-black uppercase shadow-xl shadow-red-900/20 hover:bg-red-700 transition-transform active:scale-95 tracking-widest text-sm flex items-center justify-center gap-2">
+                        Відправити звіт
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
-    <script src="/static/js/app.js"></script>
+    <div id="toast-container" class="fixed bottom-6 left-0 right-0 md:left-auto md:right-6 z-[200] flex flex-col gap-3 pointer-events-none px-4 md:px-0 items-center md:items-end"></div>
+
+    <script src="/static/js/app.js?v=2.0"></script>
 </body>
 </html>
