@@ -13,23 +13,31 @@ from app.services.ai_parser import AIService, AIInputContext, WarehouseSchema
 router = APIRouter(prefix="/api/driver", tags=["Driver"])
 
 
-@router.get("/orders/current", response_model=OrderResponse, status_code=status.HTTP_200_OK)
+
+@router.get("/orders/current", response_model=list[OrderResponse], status_code=status.HTTP_200_OK)
 async def get_current_order(user: is_driver, db: db_dep):
+
     stmt = select(Order).filter(
         Order.driver_id == user.id,
-        Order.status == OrderStatusEnum.IN_PROGRESS
-    )
-    result = await db.execute(stmt)
-    order = result.scalar_one_or_none()
+        Order.status.in_([
+            OrderStatusEnum.IN_PROGRESS,
+            OrderStatusEnum.NEEDS_ATTENTION,
+            OrderStatusEnum.REROUTED
+        ])
+    ).order_by(Order.id.desc())
 
-    if not order:
+    result = await db.execute(stmt)
+
+
+    orders = result.scalars().all()
+
+    if not orders:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Активний рейс не знайдено"
+            detail="Активних рейсів не знайдено"
         )
-    return order
 
-
+    return orders
 @router.post("/orders/{order_id}/accept", status_code=status.HTTP_200_OK)
 async def accept_order(order_id: int, user: is_driver, db: db_dep):
     result = await db.execute(
