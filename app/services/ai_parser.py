@@ -5,7 +5,6 @@ from pydantic import BaseModel, Field, field_validator
 from openai import AsyncOpenAI
 from dotenv import load_dotenv
 
-# Імпорти наших моделей
 from app.models.order_model import AIActionEnum, PriorityEnum
 from app.models.warehouse_model import ItemTypeEnum
 
@@ -57,7 +56,7 @@ class AIService:
 3. Вантаж не прийняли -> RESTOCK (повернення).
 Відповідай коротко українською."""
 
-        # Формуємо JSON згідно з ТЗ, включаючи cargo_quantity (поправка Семена)
+
         context_data = {
             "driver_comment": data.driver_comment,
             "current_destination_id": data.current_destination_id,
