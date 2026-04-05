@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LogiFlow | Авторизація</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+        
+        :root {
+            --logistics-blue: #1A4B84;
+            --bg-gray: #F5F7FA;
+            --text-dark: #1D2127;
+            --border-gray: #B0B8C1;
+        }
+
+        body {
+            background-color: var(--bg-gray);
+            font-family: 'Inter', sans-serif;
+            color: var(--text-dark);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Симетричні бокові хвилі (Стильна логістика) */
+        .side-decoration {
+            position: fixed;
+            top: 0;
+            width: 10vw;
+            height: 100%;
+            z-index: -1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            padding: 0 20px;
+        }
+        .left-side { left: 0; }
+        .right-side { right: 0; transform: scaleX(-1); }
+
+        .wave-line {
+            height: 2px;
+            background: var(--logistics-blue);
+            opacity: 0.1;
+            border-radius: 2px;
+            animation: slideWave 4s ease-in-out infinite alternate;
+        }
+
+        @keyframes slideWave {
+            from { width: 30%; transform: translateX(0); }
+            to { width: 80%; transform: translateX(20px); }
+        }
+
+        /* Основна картка форми */
+        .auth-card {
+            background: #FFFFFF;
+            width: 100%;
+            max-width: 460px;
+            padding: 3.5rem 2.5rem;
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            animation-duration: 0.3s !important; /* Миттєва поява */
+        }
+
+        /* Поля вводу (Згідно ТЗ) */
+        .custom-input {
+            height: 64px; /* Ергономіка для водія */
+            border: 2px solid var(--border-gray);
+            border-radius: 12px;
+            padding: 0 1.5rem;
+            font-size: 18px;
+            font-weight: 400;
+            color: var(--text-dark);
+            background: #FFFFFF;
+            transition: all 0.2s ease;
+            width: 100%;
+            outline: none;
+        }
+
+        .custom-input:focus {
+            border-color: var(--logistics-blue);
+            box-shadow: 0 0 0 4px rgba(26, 75, 132, 0.1);
+        }
+
+        .custom-input::placeholder {
+            color: #9CA3AF;
+            font-size: 16px;
+        }
+
+        /* Кнопка (Згідно ТЗ) */
+        .btn-submit {
+            height: 64px;
+            background-color: var(--logistics-blue);
+            color: #FFFFFF;
+            font-size: 18px;
+            font-weight: 700;
+            border-radius: 12px;
+            width: 100%;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(26, 75, 132, 0.2);
+        }
+
+        .btn-submit:hover {
+            filter: brightness(1.1);
+            transform: translateY(-1px);
+        }
+
+        .btn-submit:active {
+            transform: translateY(0);
+            filter: brightness(0.9);
+        }
+
+        .label-text {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+            display: block;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        @media (max-width: 640px) {
+            .auth-card {
+                max-width: 90%;
+                padding: 2.5rem 1.5rem;
+                border-radius: 20px;
+            }
+            .side-decoration { display: none; } /* Прибираємо шум на мобільних */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="side-decoration left-side">
+        <div class="wave-line" style="animation-delay: 0s"></div>
+        <div class="wave-line" style="animation-delay: 1s"></div>
+        <div class="wave-line" style="animation-delay: 2s"></div>
+    </div>
+    <div class="side-decoration right-side">
+        <div class="wave-line" style="animation-delay: 0.5s"></div>
+        <div class="wave-line" style="animation-delay: 1.5s"></div>
+        <div class="wave-line" style="animation-delay: 2.5s"></div>
+    </div>
+
+    <div class="auth-card animate__animated animate__fadeIn">
+        <header class="text-center mb-10">
+            <h1 class="text-4xl font-extrabold tracking-tight mb-2" style="color: var(--logistics-blue)">
+                LOGI<span style="color: var(--text-dark)">FLOW</span>
+            </h1>
+            <p class="text-slate-500 text-sm font-medium">Система управління логістикою</p>
+        </header>
+
+        <form onsubmit="handleLogin(event)" class="space-y-6">
+            <div>
+                <label class="label-text">Користувач</label>
+                <input type="text" name="username" required 
+                    placeholder="Введіть логін"
+                    class="custom-input">
+            </div>
+
+            <div>
+                <label class="label-text">Пароль</label>
+                <input type="password" name="password" required 
+                    placeholder="••••••••"
+                    class="custom-input">
+            </div>
+
+            <div class="pt-4">
+                <button type="submit" class="btn-submit">
+                    АВТОРИЗАЦІЯ
+                </button>
+            </div>
+        </form>
+
+        <footer class="mt-10 pt-6 border-t border-slate-100 text-center">
+            <p class="text-xs text-slate-400 font-medium">Apex Logic Tech • 2026</p>
+        </footer>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

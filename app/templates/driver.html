@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Панель водія | LogiFlow</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+        body { background-color: #F5F7FA; font-family: 'Inter', sans-serif; color: #1D2127; }
+        .btn-action { height: 60px; border-radius: 16px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; transition: all 0.2s; display: flex; align-items: center; justify-content: center; width: 100%; }
+        .order-card { background: #FFFFFF; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); }
+        .status-badge { padding: 4px 12px; border-radius: 8px; font-size: 12px; font-weight: 800; text-transform: uppercase; }
+        /* Кольори статусів */
+        .status-pending { background: #E5E7EB; color: #4B5563; }
+        .status-progress { background: #DBEAFE; color: #1A4B84; }
+        .status-attention { background: #FFEDD5; color: #EA580C; }
+        .status-completed { background: #DCFCE7; color: #166534; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <header class="bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center sticky top-0 z-40">
+        <div>
+            <h1 class="text-lg font-extrabold text-[#1A4B84]">DRIVER PANEL</h1>
+            <p id="driver-name" class="text-xs font-bold text-slate-500 uppercase tracking-widest">Завантаження...</p>
+        </div>
+        <button onclick="logout()" class="p-2 bg-slate-100 rounded-xl">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+        </button>
+    </header>
+
+    <main class="flex-1 p-6 max-w-2xl mx-auto w-full">
+        <div id="driver-view-content">
+            <div class="animate-pulse space-y-4">
+                <div class="h-40 bg-white rounded-3xl"></div>
+                <div class="h-14 bg-slate-200 rounded-2xl w-full"></div>
+            </div>
+        </div>
+    </main>
+
+    <div id="sos-modal" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4">
+        <div class="bg-white w-full max-w-lg rounded-t-[32px] sm:rounded-[32px] p-8 animate__animated animate__slideInUp">
+            <h2 class="text-2xl font-extrabold mb-2">ПОВІДОМИТИ ПРО ПРОБЛЕМУ</h2>
+            <p class="text-slate-500 text-sm mb-6">Опишіть ситуацію, ШІ проаналізує її миттєво.</p>
+            <textarea id="sos-comment" placeholder="Наприклад: ДТП на перехресті, затримка 40 хв..." class="w-full h-40 p-4 border-2 border-slate-200 rounded-2xl outline-none focus:border-[#1A4B84] text-lg mb-6"></textarea>
+            <div class="flex gap-4">
+                <button onclick="closeSOS()" class="flex-1 h-14 font-bold text-slate-500 uppercase">Скасувати</button>
+                <button onclick="submitSOS()" class="flex-[2] h-14 bg-[#E53935] text-white rounded-2xl font-extrabold uppercase">Відправити</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
